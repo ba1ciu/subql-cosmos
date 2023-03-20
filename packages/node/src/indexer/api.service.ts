@@ -13,7 +13,7 @@ import {
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
-import { BlockResponse } from '@cosmjs/tendermint-rpc/build/Tendermint37/responses';
+import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint37/responses';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
