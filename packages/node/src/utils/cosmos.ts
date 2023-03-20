@@ -14,7 +14,7 @@ import {
   Header,
   toRfc3339WithNanoseconds,
 } from '@cosmjs/tendermint-rpc';
-import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+import { BlockResponse } from '@cosmjs/tendermint-rpc/build/Tendermint34/responses';
 import { getLogger } from '@subql/node-core';
 import {
   SubqlCosmosEventFilter,

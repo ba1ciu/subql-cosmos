@@ -9,11 +9,11 @@ import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
 import {
   HttpEndpoint,
-  Tendermint34Client,
+  Tendermint37Client,
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
-import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
+import { BlockResponse } from '@cosmjs/tendermint-rpc/build/Tendermint37/responses';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
@@ -47,7 +47,7 @@ const RETRY_STATUS_CODES = [429, 502];
 @Injectable()
 export class ApiService {
   private api: CosmosClient;
-  private tendermint: Tendermint34Client;
+  private tendermint: Tendermint37Client;
   private currentBlockHash: string;
   private currentBlockNumber: number;
   networkMeta: NetworkMetadataPayload;
@@ -84,7 +84,7 @@ export class ApiService {
             })
           : new HttpClient(endpoint);
 
-      this.tendermint = await Tendermint34Client.create(rpcClient);
+      this.tendermint = await Tendermint37Client.create(rpcClient);
       this.registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
       const chaintypes = await this.getChainType(network);
@@ -153,7 +153,7 @@ export class ApiService {
 
 export class CosmosClient extends CosmWasmClient {
   constructor(
-    private readonly tendermintClient: Tendermint34Client,
+    private readonly tendermintClient: Tendermint37Client,
     public registry: Registry,
   ) {
     super(tendermintClient);
@@ -217,7 +217,7 @@ export class CosmosClient extends CosmWasmClient {
 export class CosmosSafeClient extends CosmWasmClient {
   height: number;
 
-  constructor(tmClient: Tendermint34Client, height: number) {
+  constructor(tmClient: Tendermint37Client, height: number) {
     super(tmClient);
     this.height = height;
   }
@@ -251,6 +251,7 @@ export class CosmosSafeClient extends CosmWasmClient {
     const results = await this.forceGetTmClient().txSearchAll({ query: query });
     return results.txs.map((tx) => {
       return {
+        txIndex: tx.index,
         height: tx.height,
         hash: toHex(tx.hash).toUpperCase(),
         code: tx.result.code,
