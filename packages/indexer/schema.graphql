@@ -17,13 +17,79 @@ type ExecuteEvent @entity {
   id: ID!
   blockHeight: BigInt!
   txHash: String!
-  contractAddress: String!
+}
+
+type CreditCollection @entity {
+  id: ID!
+  denom: String! @index(unique: true)
+  projectId: Int! @index(unique: true)
+  activeAmount: BigInt!
+  retiredAmount: BigInt!
+  issuanceDate: String!
+  x_aggregation_location: String
+  y_aggregation_location: String
+  credit_type: String
+  metadataURIs: [MetadataURI!] @derivedFrom(field: "creditCollection")
+  eventData: [EventData!] @derivedFrom(field: "creditCollection")
+  mediaFiles: [MediaFile!] @derivedFrom(field: "creditCollection")
+  binaryFiles: [BinaryFile!] @derivedFrom(field: "creditCollection")
+  applicantData: ApplicantData @derivedFrom(field: "creditCollection")
+}
+
+type WebReference @entity {
+  id: ID!
+  applicantData: ApplicantData!
+  url: String!
+}
+
+type ApplicantData @entity {
+  id: ID!
+  name: String!
+  description: String!
+  webReferences: [WebReference!]! @derivedFrom(field: "applicantData")
+  creditCollection: CreditCollection!
+}
+
+type MediaFile @entity {
+  id: ID!
+  name: String!
+  url: String!
+  creditCollection: CreditCollection!
+}
+
+type BinaryFile @entity {
+  id: ID!
+  name: String!
+  url: String!
+  creditCollection: CreditCollection!
+}
+
+type EventData @entity {
+  id: ID!
+  latitude: String!
+  longitude: String!
+  amount: String!
+  magnitude: String!
+  material: [MaterialData!]! @derivedFrom(field: "eventData")
+  registrationDate: String!
+  creditCollection: CreditCollection!
+}
+
+type MaterialData @entity {
+  id: ID!
+  key: String!
+  value: String!
+  eventData: EventData!
+}
+
+type MetadataURI @entity {
+  id: ID!
+  creditCollection: CreditCollection!
+  url: String! @index(unique: true)
 }
 
 type Message @entity {
   id: ID!
   blockHeight: BigInt!
   txHash: String!
-  sender: String!
-  contract: String!
 }

@@ -28,6 +28,7 @@
   "dependencies": {
     "@subql/types-cosmos": "latest",
     "@types/node": "^17.0.21",
+    "axios": "^1.3.4",
     "pino": "^7.8.0",
     "ts-proto": "^1.112.1",
     "tslib": "^2.3.1"
