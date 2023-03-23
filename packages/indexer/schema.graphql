@@ -25,15 +25,23 @@ type CreditCollection @entity {
   projectId: Int! @index(unique: true)
   activeAmount: BigInt!
   retiredAmount: BigInt!
+  creditType: String!
+  metadataUris: [MetadataUri!] @derivedFrom(field: "creditCollection")
+  issuanceInfos: [IssuanceInfo!] @derivedFrom(field: "creditCollection")
+}
+
+type IssuanceInfo @entity {
+  id: ID!
   issuanceDate: String!
-  x_aggregation_location: String
-  y_aggregation_location: String
-  credit_type: String
-  metadataURIs: [MetadataURI!] @derivedFrom(field: "creditCollection")
-  eventData: [EventData!] @derivedFrom(field: "creditCollection")
-  mediaFiles: [MediaFile!] @derivedFrom(field: "creditCollection")
-  binaryFiles: [BinaryFile!] @derivedFrom(field: "creditCollection")
-  applicantData: ApplicantData @derivedFrom(field: "creditCollection")
+  creditType: String!
+  amount: BigInt!
+  aggregationLatitude: String!
+  aggregationLongitude: String!
+  eventData: [EventData!] @derivedFrom(field: "issuanceInfo")
+  mediaFiles: [MediaFile!] @derivedFrom(field: "issuanceInfo")
+  binaryFiles: [BinaryFile!] @derivedFrom(field: "issuanceInfo")
+  applicant_data: ApplicantData! @derivedFrom(field: "issuanceInfo")
+  creditCollection: CreditCollection!
 }
 
 type WebReference @entity {
@@ -47,21 +55,21 @@ type ApplicantData @entity {
   name: String!
   description: String!
   webReferences: [WebReference!]! @derivedFrom(field: "applicantData")
-  creditCollection: CreditCollection!
+  issuanceInfo: IssuanceInfo!
 }
 
 type MediaFile @entity {
   id: ID!
   name: String!
   url: String!
-  creditCollection: CreditCollection!
+  issuanceInfo: IssuanceInfo!
 }
 
 type BinaryFile @entity {
   id: ID!
   name: String!
   url: String!
-  creditCollection: CreditCollection!
+  issuanceInfo: IssuanceInfo!
 }
 
 type EventData @entity {
@@ -72,7 +80,7 @@ type EventData @entity {
   magnitude: String!
   material: [MaterialData!]! @derivedFrom(field: "eventData")
   registrationDate: String!
-  creditCollection: CreditCollection!
+  issuanceInfo: IssuanceInfo!
 }
 
 type MaterialData @entity {
@@ -82,7 +90,7 @@ type MaterialData @entity {
   eventData: EventData!
 }
 
-type MetadataURI @entity {
+type MetadataUri @entity {
   id: ID!
   creditCollection: CreditCollection!
   url: String! @index(unique: true)
