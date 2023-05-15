@@ -60,3 +60,7 @@ dataSources:
           kind: cosmos/EventHandler
           filter:
             type: empowerchain.plasticcredit.EventIssuedCredits
+        - handler: handleWasmEvents
+          kind: cosmos/EventHandler
+          filter:
+            type: wasm
