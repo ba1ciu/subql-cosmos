@@ -19,6 +19,10 @@ type ExecuteEvent @entity {
   txHash: String!
 }
 
+type Country @entity {
+  id: ID!
+}
+
 type MarketplaceListing @entity {
   id: ID!
   owner: String!
@@ -26,6 +30,7 @@ type MarketplaceListing @entity {
   amount: BigInt!
   pricePerCreditAmount: BigInt!
   pricePerCreditDenom: String!
+  creditCollection: CreditCollection!
 }
 
 type CreateListingWasmEvent @entity {
@@ -74,24 +79,26 @@ type CreditCollection @entity {
   id: ID!
   denom: String! @index(unique: true)
   projectId: Int! @index(unique: true)
+  applicantId: Int! @index(unique: true)
   activeAmount: BigInt!
   retiredAmount: BigInt!
   creditType: String!
   metadataUris: [MetadataUri!] @derivedFrom(field: "creditCollection")
   creditData: [CreditData!] @derivedFrom(field: "creditCollection")
+  marketplaceListings: [MarketplaceListing!] @derivedFrom(field: "creditCollection")
 }
 
 type CreditData @entity {
   id: ID!
-  issuanceDate: String!
+  issuanceDate: Date!
   creditType: String!
-  amount: BigInt!
-  aggregationLatitude: String!
-  aggregationLongitude: String!
+  aggregationLatitude: Float!
+  aggregationLongitude: Float!
+  rawJsonData: String!
   eventData: [EventData!] @derivedFrom(field: "creditData")
   mediaFiles: [MediaFile!] @derivedFrom(field: "creditData")
   binaryFiles: [BinaryFile!] @derivedFrom(field: "creditData")
-  applicant_data: ApplicantData! @derivedFrom(field: "creditData")
+  applicantData: ApplicantData! @derivedFrom(field: "creditData")
   creditCollection: CreditCollection!
 }
 
@@ -125,12 +132,13 @@ type BinaryFile @entity {
 
 type EventData @entity {
   id: ID!
-  latitude: String!
-  longitude: String!
-  amount: String!
+  latitude: Float!
+  longitude: Float!
+  country: String
+  amount: Float!
   magnitude: String!
   material: [MaterialData!]! @derivedFrom(field: "eventData")
-  registrationDate: String!
+  registrationDate: Date!
   creditData: CreditData!
 }
 

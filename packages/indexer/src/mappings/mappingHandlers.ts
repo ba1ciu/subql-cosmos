@@ -1,4 +1,4 @@
-import { ExecuteEvent, Message, Transaction, Block, CreditCollection, EventData, MaterialData, MetadataUri, MediaFile, BinaryFile, ApplicantData, WebReference, CreditData, CreateListingWasmEvent, MarketplaceListing, BuyCreditsWasmEvent, UpdateListingWasmEvent, CancelListingWasmEvent } from "../types";
+import { ExecuteEvent, Message, Transaction, Block, CreditCollection, EventData, MaterialData, MetadataUri, MediaFile, BinaryFile, ApplicantData, WebReference, CreditData, CreateListingWasmEvent, MarketplaceListing, BuyCreditsWasmEvent, UpdateListingWasmEvent, CancelListingWasmEvent, Country } from "../types";
 import {
   CosmosEvent,
   CosmosBlock,
@@ -72,6 +72,7 @@ export async function handleCreateListing(event: CosmosEvent): Promise<void> {
     amount: numberOfCredits,
     pricePerCreditAmount: pricePerCreditAmount,
     pricePerCreditDenom: pricePerCreditDenom,
+    creditCollectionId: denom,
   });
   await marketplaceListing.save();
 }
@@ -169,6 +170,7 @@ export async function handleIssueCredits(event: CosmosEvent): Promise<void> {
   let denom = fetchPropertyFromEvent(event, "denom");
   let amount = fetchPropertyFromEvent(event, "amount");
   let projectId = fetchPropertyFromEvent(event, "project_id");
+  let applicantId = fetchPropertyFromEvent(event, "applicant_id");
   let creditTypeAbbreviation = fetchPropertyFromEvent(event, "credit_type_abbreviation");
 
   const metadataUrls = fetchPropertyFromEvent(event, "metadata_uris");
@@ -178,6 +180,7 @@ export async function handleIssueCredits(event: CosmosEvent): Promise<void> {
     id: denom,
     denom: denom,
     projectId: parseInt(projectId),
+    applicantId: parseInt(applicantId),
     activeAmount: BigInt(amount),
     retiredAmount: BigInt(0),
     creditType: creditTypeAbbreviation,
@@ -214,14 +217,16 @@ async function fetchMetadataFromIpfs(url: string): Promise<any> {
 }
 
 async function handleCreditData(metadata: any, creditCollectionId: string, creditDataIndex: string): Promise<void> {
+
   const creditData = CreditData.create({
     id: `${creditCollectionId}-${creditDataIndex}`,
     issuanceDate: findPropById("issuance_date", metadata["credit_props"])?.content,
     creditType: findPropById("credit_type", metadata["credit_props"])?.content,
     // For now, we take only amount from first event
-    amount: findPropById("amount", findPropById("credit_events_data", metadata["credit_props"])?.content[0].content)?.content,
-    aggregationLatitude: findPropById("aggregation_location", metadata["credit_props"])?.content.latitude || "",
-    aggregationLongitude: findPropById("aggregation_location", metadata["credit_props"])?.content.longitude || "",
+    // amount: findPropById("amount", findPropById("credit_events_data", metadata["credit_props"])?.content[0].content)?.content,
+    aggregationLatitude: findPropById("aggregation_location", metadata["credit_props"])?.content.latitude || 0,
+    aggregationLongitude: findPropById("aggregation_location", metadata["credit_props"])?.content.longitude || 0,
+    rawJsonData: JSON.stringify(metadata),
     creditCollectionId: creditCollectionId,
   })
   await creditData.save();
@@ -238,10 +243,36 @@ async function handleCreditData(metadata: any, creditCollectionId: string, credi
 }
 
 async function handleEventData(eventDataJson: any, creditDataId: string, eventIndex: string): Promise<void> {
+  let latitude = findPropById("location", eventDataJson)?.content.latitude || 0;
+  let longitude = findPropById("location", eventDataJson)?.content.longitude || 0;
+  let country = "";
+
+  try {
+    const reqUri = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + latitude + "," + longitude + "&key=$API_KEY";
+    const response = await fetch(reqUri);
+    const result = await response.json();
+
+    for (let r of result.results) {
+      if (r.types.includes("country")) {
+        country = r.formatted_address;
+      }
+    }
+  }
+  catch (e) {
+    // if reverse geolocation fails, ignore the error
+  }
+  if (country) {
+    const countryDict = Country.create({
+      id: country,
+    });
+    await countryDict.save();
+  }
+
   const eventData = EventData.create({
     id: `${creditDataId}-${eventIndex}`,
-    latitude: findPropById("location", eventDataJson)?.content.latitude,
-    longitude: findPropById("location", eventDataJson)?.content.longitude,
+    latitude: latitude,
+    longitude: longitude,
+    country: country,
     amount: findPropById("amount", eventDataJson)?.content,
     magnitude: findPropById("magnitude", eventDataJson)?.content,
     registrationDate: findPropById("registration_date", eventDataJson)?.content,
