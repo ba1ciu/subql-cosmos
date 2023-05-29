@@ -60,6 +60,18 @@ dataSources:
           kind: cosmos/EventHandler
           filter:
             type: empowerchain.plasticcredit.EventIssuedCredits
+        - handler: handleTransferCredits
+          kind: cosmos/EventHandler
+          filter:
+            type: empowerchain.plasticcredit.EventTransferCredits
+        - handler: handleRetiredCredits
+          kind: cosmos/EventHandler
+          filter:
+            type: empowerchain.plasticcredit.EventRetiredCredits
+        - handler: handleCreateCertificate
+          kind: cosmos/EventHandler
+          filter:
+            type: empowerchain.certificates.EventCreateCertificate
         - handler: handleWasmEvents
           kind: cosmos/EventHandler
           filter:

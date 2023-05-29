@@ -23,14 +23,69 @@ type Country @entity {
   id: ID!
 }
 
+type Organization @entity {
+  id: ID!
+}
+
+type Wallet @entity {
+  id: ID!
+  address: String! @index(unique: true)
+  creditBalances: [CreditBalance!] @derivedFrom(field: "wallet")
+  certificates: [Certificate!] @derivedFrom(field: "wallet")
+  creditOffsetCertificates: [CreditOffsetCertificate!] @derivedFrom(field: "wallet")
+}
+
+type CreditBalance @entity {
+  id: ID!
+  creditCollection: CreditCollection!
+  amountActive: BigInt!
+  amountRetired: BigInt!
+  wallet: Wallet!
+}
+
+type Certificate @entity {
+  id: ID!
+  type: String!
+  issuer: String!
+  owner: String!
+  data: String!
+  wallet: Wallet!
+}
+
+type CreditOffsetCertificate @entity {
+  id: ID!
+  denom: String!
+  amount: BigInt!
+  retiringEntityAddress: String!
+  retiringEntityName: String!
+  retiringEntityAdditionalData: String!
+  wallet: Wallet!
+}
+
 type MarketplaceListing @entity {
   id: ID!
   owner: String!
   denom: String!
   amount: BigInt!
+  initialAmount: BigInt!
   pricePerCreditAmount: BigInt!
   pricePerCreditDenom: String!
   creditCollection: CreditCollection!
+}
+
+type TransferedCreditsEvent @entity {
+  id: ID!
+  creditCollection: CreditCollection!
+  sender: String!
+  recipient: String!
+  amount: BigInt!
+}
+
+type RetiredCreditsEvent @entity {
+  id: ID!
+  creditCollection: CreditCollection!
+  owner: String!
+  amount: BigInt!
 }
 
 type CreateListingWasmEvent @entity {
